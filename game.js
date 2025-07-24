@@ -9,12 +9,12 @@ const COLS = Math.floor(canvas.width / resolution);
 const ROWS = Math.floor(canvas.height / resolution);
 
 function buildGrid() {
-    return new Array(COLS).fill(null)
-        .map(() => new Array(ROWS).fill(null)
-            .map(() => Math.random() > 0.9 ? 1 : 0))
-
+    return new Array(COLS).fill(null).map(() =>
+        new Array(ROWS).fill(null).map(() => Math.random() > 0.9 ? 1 : 0)
+    );
 }
-let grid = buildGrid()
+
+let grid = buildGrid();
 
 function drawGrid(grid) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -61,11 +61,73 @@ function nextGen(grid) {
     return nextGrid;
 }
 
-function update() {
-    grid = nextGen(grid);
-    drawGrid(grid);
+// ====== Animation Control with Pause ======
+const FPS = 10;
+const FRAME_DURATION = 1000 / FPS;
+let lastTime = 0;
+let isPaused = false;
+
+function update(timestamp) {
+    if (!isPaused && timestamp - lastTime >= FRAME_DURATION) {
+        grid = nextGen(grid);
+        drawGrid(grid);
+        lastTime = timestamp;
+    }
     requestAnimationFrame(update);
 }
 
 drawGrid(grid);
 requestAnimationFrame(update);
+
+// ====== Mouse Drawing ======
+let isMouseDown = false;
+
+canvas.addEventListener('mousedown', (event) => {
+    if (event.button !== 0) return;
+    isMouseDown = true;
+
+    const { col, row } = getCellFromEvent(event);
+    if (col !== null && row !== null) {
+        grid[col][row] = grid[col][row] ? 0 : 1; // toggle
+        drawGrid(grid);
+    }
+});
+
+canvas.addEventListener('mousemove', (event) => {
+    if (!isMouseDown) return;
+
+    const { col, row } = getCellFromEvent(event);
+    if (col !== null && row !== null) {
+        grid[col][row] = 1; // only draw ON
+        drawGrid(grid);
+    }
+});
+
+canvas.addEventListener('mouseup', () => {
+    isMouseDown = false;
+});
+
+// Prevent context menu on right-click
+canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// ====== Cell Location Helper ======
+function getCellFromEvent(event) {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    const col = Math.floor(x / resolution);
+    const row = Math.floor(y / resolution);
+
+    if (col >= 0 && col < COLS && row >= 0 && row < ROWS) {
+        return { col, row };
+    }
+    return { col: null, row: null };
+}
+
+// ====== Spacebar Pause Toggle ======
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+        isPaused = !isPaused;
+    }
+});

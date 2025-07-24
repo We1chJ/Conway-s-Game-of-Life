@@ -10,23 +10,84 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
+            font-family: sans-serif;
         }
+
         body {
             width: 100vw;
             height: 100vh;
+            position: relative;
         }
+
         canvas {
             background-color: #111;
             display: block;
             width: 100vw;
             height: 100vh;
         }
+
+        #help-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 20px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            cursor: pointer;
+            z-index: 10;
+            user-select: none;
+        }
+
+        #help-overlay {
+            position: absolute;
+            top: 50px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            max-width: 250px;
+            display: none;
+            z-index: 10;
+        }
     </style>
 </head>
 
 <body>
     <canvas id="game"></canvas>
+
+    <!-- Help Button -->
+    <div id="help-button">?</div>
+    <div id="help-overlay">
+        <strong>Controls:</strong><br><br>
+        🖱️ Click: Toggle cell<br>
+        🖱️ Click + Drag: Draw cells<br>
+        ␣ Space: Pause / Resume<br>
+        ♻️ Cells update automatically at ~10 FPS
+    </div>
+
     <script src="./game.js"></script>
+    <script>
+        const helpBtn = document.getElementById('help-button');
+        const helpOverlay = document.getElementById('help-overlay');
+
+        helpBtn.addEventListener('click', () => {
+            helpOverlay.style.display = helpOverlay.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Optional: Hide on click outside
+        window.addEventListener('click', (e) => {
+            if (!helpBtn.contains(e.target) && !helpOverlay.contains(e.target)) {
+                helpOverlay.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 
 </html>
